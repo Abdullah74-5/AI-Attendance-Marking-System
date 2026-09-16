@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Live Attendance Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-8 text-center flex flex-col items-center justify-center relative">
+
+    <!-- Success Overlay Banner -->
+    <div id="successModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div class="bg-gray-800 border-2 border-green-500 p-8 rounded-xl shadow-2xl max-w-md w-full space-y-4 animate-bounce">
+            <div class="w-16 h-16 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto text-3xl font-bold">✓</div>
+            <h2 class="text-2xl font-bold text-green-400">Attendance Marked!</h2>
+            <p id="studentNameText" class="text-lg font-medium text-gray-200">Processing student...</p>
+            <p class="text-xs text-gray-400">Redirecting to dashboard in <span id="countdown">3</span> seconds...</p>
+        </div>
+    </div>
+
+    <!-- Video Scanner Container -->
+    <div class="max-w-3xl mx-auto space-y-4 w-full">
+        <h1 class="text-2xl font-bold">Real-Time AI Face Scanner</h1>
+        <p class="text-gray-400 text-sm">Look directly at the camera to automatically record today's attendance.</p>
+        
+        <div class="inline-block border-4 border-gray-700 rounded-lg overflow-hidden bg-black shadow-2xl">
+            <img src="{% url 'video_feed_attendance' %}" class="w-full max-w-xl h-auto" alt="Live Scanner">
+        </div>
+
+        <div>
+            <a href="{% url 'dashboard' %}" class="inline-block bg-gray-700 px-6 py-2 rounded hover:bg-gray-600 font-medium">Return to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        // Record exact ISO timestamp when the live camera page is opened
+        const pageLoadTime = new Date().toISOString();
+
+        let checkInterval = setInterval(() => {
+            // Pass session_start so old database records are completely ignored
+            fetch(`/check-latest-attendance/?session_start=${encodeURIComponent(pageLoadTime)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.marked) {
+                        clearInterval(checkInterval); // Stop polling
+                        
+                        // Display confirmation overlay
+                        document.getElementById('studentNameText').innerText = `Welcome, ${data.student_name}!`;
+                        document.getElementById('successModal').classList.remove('hidden');
+
+                        // 3-second countdown before returning to dashboard
+                        let timeLeft = 3;
+                        const timer = setInterval(() => {
+                            timeLeft--;
+                            document.getElementById('countdown').innerText = timeLeft;
+                            if (timeLeft <= 0) {
+                                clearInterval(timer);
+                                window.location.href = "{% url 'dashboard' %}";
+                            }
+                        }, 1000);
+                    }
+                })
+                .catch(err => console.error("Polling error:", err));
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Attendance Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto space-y-6">
+        <div class="flex justify-between items-center bg-white p-6 rounded-lg shadow">
+            <h1 class="text-2xl font-bold text-gray-800">AI Attendance Management System</h1>
+            <div class="space-x-3">
+                <a href="{% url 'enroll' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Enroll Student</a>
+                <a href="{% url 'mark_attendance' %}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Mark Live Attendance</a>
+            </div>
+        </div>
+
+        <!-- Metric Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
+                <p class="text-gray-500 font-medium">Total Registered Students</p>
+                <p class="text-3xl font-bold text-gray-800 mt-1">{{ total_students }}</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow border-l-4 border-green-500">
+                <p class="text-gray-500 font-medium">Present Today ({{ today_date }})</p>
+                <p class="text-3xl font-bold text-gray-800 mt-1">{{ present_count }}</p>
+            </div>
+        </div>
+
+        <!-- Attendance Logs Table -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h2 class="text-lg font-bold mb-4 text-gray-800">Today's Attendance Log</h2>
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b bg-gray-50 text-gray-600 text-sm">
+                        <th class="p-3">Roll Number</th>
+                        <th class="p-3">Student Name</th>
+                        <th class="p-3">Time In</th>
+                        <th class="p-3">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in attendance_records %}
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3 font-mono text-sm">{{ log.student.roll_number }}</td>
+                        <td class="p-3 font-medium">{{ log.student.name }}</td>
+                        <td class="p-3 text-gray-600">{{ log.time|time:"H:i:s" }}</td>
+                        <td class="p-3"><span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded">Present</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="p-4 text-center text-gray-500">No attendance marked yet today.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
